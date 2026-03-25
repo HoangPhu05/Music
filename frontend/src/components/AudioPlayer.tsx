@@ -2,14 +2,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import { songsApi } from '../api/client';
 import { usePlayerStore } from '../store/playerStore';
 
-const PlayIcon = () => (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 sm:w-6 sm:h-6">
+const PlayIcon = ({ big = false }: { big?: boolean }) => (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={big ? 'w-8 h-8' : 'w-5 h-5 sm:w-6 sm:h-6'}>
         <path d="M8 5v14l11-7z" />
     </svg>
 );
 
-const PauseIcon = () => (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 sm:w-6 sm:h-6">
+const PauseIcon = ({ big = false }: { big?: boolean }) => (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={big ? 'w-8 h-8' : 'w-5 h-5 sm:w-6 sm:h-6'}>
         <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
     </svg>
 );
@@ -50,6 +50,7 @@ export default function AudioPlayer() {
     const audioRef = useRef<HTMLAudioElement>(null);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
+    const [isExpanded, setIsExpanded] = useState(false);
     const currentSong = queue[currentIndex] ?? null;
 
     useEffect(() => {
@@ -80,6 +81,14 @@ export default function AudioPlayer() {
         });
     }, [currentSong?.id, isPlaying, setPlaying]);
 
+    useEffect(() => {
+        const onEsc = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setIsExpanded(false);
+        };
+        window.addEventListener('keydown', onEsc);
+        return () => window.removeEventListener('keydown', onEsc);
+    }, []);
+
     const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
         const t = Number(e.target.value);
         if (audioRef.current) audioRef.current.currentTime = t;
@@ -89,68 +98,140 @@ export default function AudioPlayer() {
     if (!currentSong) return null;
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-50 glass border-t border-white/10 px-3 py-2 sm:px-4 sm:py-3">
-            <audio
-                ref={audioRef}
-                onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime ?? 0)}
-                onLoadedMetadata={() => setDuration(audioRef.current?.duration ?? 0)}
-                onEnded={playNext}
-                onError={playNext}
-                crossOrigin="use-credentials"
-            />
+        <>
+            <div className="fixed bottom-0 left-0 right-0 z-50 glass border-t border-white/10 px-3 py-2 sm:px-4 sm:py-3">
+                <audio
+                    ref={audioRef}
+                    onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime ?? 0)}
+                    onLoadedMetadata={() => setDuration(audioRef.current?.duration ?? 0)}
+                    onEnded={playNext}
+                    onError={playNext}
+                    crossOrigin="use-credentials"
+                />
 
-            <div className="max-w-6xl mx-auto">
-                <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-white truncate">{currentSong.title}</p>
-                        <p className="text-xs text-gray-400 truncate">{currentSong.artist ?? 'Unknown'}</p>
+                <div className="max-w-6xl mx-auto">
+                    <div className="flex items-center justify-between gap-2">
+                        <button
+                            onClick={() => setIsExpanded(true)}
+                            className="min-w-0 flex-1 text-left rounded-lg hover:bg-white/5 px-1 py-1"
+                            title="Open now playing"
+                        >
+                            <p className="text-sm font-semibold text-white truncate">{currentSong.title}</p>
+                            <p className="text-xs text-gray-400 truncate">{currentSong.artist ?? 'Unknown'}</p>
+                        </button>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                            <button
+                                onClick={toggleShuffle}
+                                className="p-1.5 rounded-full hover:bg-white/10 transition-colors"
+                                title="Shuffle"
+                            >
+                                <ShuffleIcon active={isShuffle} />
+                            </button>
+                            <button
+                                onClick={playPrev}
+                                className="p-1.5 sm:p-2 rounded-full hover:bg-white/10 text-gray-300 hover:text-white transition-colors"
+                            >
+                                <SkipPrevIcon />
+                            </button>
+                            <button
+                                onClick={togglePlay}
+                                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-brand-600 hover:bg-brand-500 flex items-center justify-center transition-all active:scale-95"
+                            >
+                                {isPlaying ? <PauseIcon /> : <PlayIcon />}
+                            </button>
+                            <button
+                                onClick={playNext}
+                                className="p-1.5 sm:p-2 rounded-full hover:bg-white/10 text-gray-300 hover:text-white transition-colors"
+                            >
+                                <SkipNextIcon />
+                            </button>
+                        </div>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
-                        <button
-                            onClick={toggleShuffle}
-                            className="p-1.5 rounded-full hover:bg-white/10 transition-colors"
-                            title="Shuffle"
-                        >
-                            <ShuffleIcon active={isShuffle} />
-                        </button>
-                        <button
-                            onClick={playPrev}
-                            className="p-1.5 sm:p-2 rounded-full hover:bg-white/10 text-gray-300 hover:text-white transition-colors"
-                        >
-                            <SkipPrevIcon />
-                        </button>
-                        <button
-                            onClick={togglePlay}
-                            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-brand-600 hover:bg-brand-500 flex items-center justify-center transition-all active:scale-95"
-                        >
-                            {isPlaying ? <PauseIcon /> : <PlayIcon />}
-                        </button>
-                        <button
-                            onClick={playNext}
-                            className="p-1.5 sm:p-2 rounded-full hover:bg-white/10 text-gray-300 hover:text-white transition-colors"
-                        >
-                            <SkipNextIcon />
-                        </button>
+                    <div className="mt-2 flex items-center gap-2">
+                        <span className="text-[11px] text-gray-500 w-10 text-right">{formatTime(currentTime)}</span>
+                        <input
+                            type="range"
+                            min={0}
+                            max={duration || 0}
+                            value={currentTime}
+                            onChange={handleSeek}
+                            className="flex-1 h-1 accent-brand-500 cursor-pointer"
+                        />
+                        <span className="text-[11px] text-gray-500 w-10">{formatTime(duration)}</span>
                     </div>
-                </div>
-
-                <div className="mt-2 flex items-center gap-2">
-                    <span className="text-[11px] text-gray-500 w-10 text-right">{formatTime(currentTime)}</span>
-                    <input
-                        type="range"
-                        min={0}
-                        max={duration || 0}
-                        value={currentTime}
-                        onChange={handleSeek}
-                        className="flex-1 h-1 accent-brand-500 cursor-pointer"
-                    />
-                    <span className="text-[11px] text-gray-500 w-10">{formatTime(duration)}</span>
-                    <span className="hidden sm:inline text-xs text-gray-500 ml-1">
-                        {currentIndex + 1}/{queue.length}
-                    </span>
                 </div>
             </div>
-        </div>
+
+            {isExpanded && (
+                <div className="fixed inset-0 z-[60] bg-[#111320]/95 backdrop-blur-sm">
+                    <div className="h-full w-full max-w-5xl mx-auto px-4 py-5 sm:px-8 sm:py-8 flex flex-col">
+                        <div className="flex items-center justify-between">
+                            <button
+                                onClick={() => setIsExpanded(false)}
+                                className="text-gray-300 hover:text-white text-sm px-3 py-1.5 rounded-lg hover:bg-white/10"
+                            >
+                                Dong
+                            </button>
+                            <p className="text-xs sm:text-sm text-gray-400">Now Playing</p>
+                            <div className="w-14" />
+                        </div>
+
+                        <div className="flex-1 flex flex-col items-center justify-center">
+                            <div className="w-64 h-64 sm:w-80 sm:h-80 rounded-full bg-gradient-to-br from-brand-500/20 to-cyan-300/20 p-4 shadow-2xl">
+                                <div
+                                    className={`w-full h-full rounded-full bg-surface-900 border border-white/10 flex items-center justify-center ${
+                                        isPlaying ? 'animate-[spin_8s_linear_infinite]' : ''
+                                    }`}
+                                >
+                                    <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-gradient-to-br from-brand-500 to-cyan-300" />
+                                </div>
+                            </div>
+
+                            <div className="mt-8 w-full max-w-2xl">
+                                <p className="text-xl sm:text-3xl text-white font-semibold text-center truncate">{currentSong.title}</p>
+                                <p className="text-sm sm:text-base text-gray-400 mt-2 text-center truncate">
+                                    {currentSong.artist ?? 'Unknown artist'}
+                                </p>
+
+                                <div className="mt-6 sm:mt-8">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs text-gray-500 w-10 text-right">{formatTime(currentTime)}</span>
+                                        <input
+                                            type="range"
+                                            min={0}
+                                            max={duration || 0}
+                                            value={currentTime}
+                                            onChange={handleSeek}
+                                            className="flex-1 h-1.5 accent-brand-500 cursor-pointer"
+                                        />
+                                        <span className="text-xs text-gray-500 w-10">{formatTime(duration)}</span>
+                                    </div>
+
+                                    <div className="mt-7 sm:mt-8 flex items-center justify-center gap-4 sm:gap-6">
+                                        <button onClick={toggleShuffle} className="p-2.5 rounded-full hover:bg-white/10">
+                                            <ShuffleIcon active={isShuffle} />
+                                        </button>
+                                        <button onClick={playPrev} className="p-3 rounded-full hover:bg-white/10 text-gray-200">
+                                            <SkipPrevIcon />
+                                        </button>
+                                        <button
+                                            onClick={togglePlay}
+                                            className="w-16 h-16 rounded-full bg-brand-600 hover:bg-brand-500 flex items-center justify-center transition-all active:scale-95"
+                                        >
+                                            {isPlaying ? <PauseIcon big /> : <PlayIcon big />}
+                                        </button>
+                                        <button onClick={playNext} className="p-3 rounded-full hover:bg-white/10 text-gray-200">
+                                            <SkipNextIcon />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
     );
 }
