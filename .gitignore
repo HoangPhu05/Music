@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+backend/venv/
+
+# Node
+node_modules/
+frontend/node_modules/
+frontend/.vite/
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# Logs and runtime files
+*.log
+*.out
+*.err
+backend/*.log
+backend/*.out
+backend/*.err
+backend/musicapp.db
+frontend/*.log
+frontend/*.out
+frontend/*.err
+
+# Build artifacts
+dist/
+build/
+frontend/dist/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
