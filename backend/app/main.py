@@ -2,11 +2,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
+from app.database import init_db
 from app.routers import auth, playlists, songs
 
 
 def _parse_cors_origins() -> list[str]:
-    return [origin.strip() for origin in settings.CORS_ALLOWED_ORIGINS.split(",") if origin.strip()]
+    return [
+        origin.strip().rstrip("/")
+        for origin in settings.CORS_ALLOWED_ORIGINS.split(",")
+        if origin.strip()
+    ]
 
 
 app = FastAPI(
@@ -28,6 +33,11 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(songs.router)
 app.include_router(playlists.router)
+
+
+@app.on_event("startup")
+async def on_startup() -> None:
+    await init_db()
 
 
 @app.get("/", tags=["Health"])
