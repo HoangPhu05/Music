@@ -7,7 +7,7 @@ from fastapi import UploadFile
 
 from app.config import settings
 
-ALLOWED_FORMATS = {"mp3", "wav", "flac"}
+ALLOWED_FORMATS = {"mp3", "wav", "flac", "m4a"}
 CLOUDINARY_PREFIX = "cloudinary://"
 
 

@@ -115,7 +115,7 @@ export default function LibraryPage() {
                     <input
                         ref={fileInputRef}
                         type="file"
-                        accept=".mp3,.wav,.flac"
+                        accept=".mp3,.wav,.flac,.m4a"
                         multiple
                         className="hidden"
                         onChange={handleFileSelect}

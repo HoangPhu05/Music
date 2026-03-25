@@ -29,7 +29,7 @@ class Song(Base):
 
     # Thông tin file
     file_path: Mapped[str] = mapped_column(String(512), nullable=False)
-    file_format: Mapped[str] = mapped_column(String(10), nullable=False)   # mp3, wav, flac
+    file_format: Mapped[str] = mapped_column(String(10), nullable=False)   # mp3, wav, flac, m4a
     file_size_bytes: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(

@@ -28,7 +28,7 @@ async def upload_song(
     if ext not in ALLOWED_FORMATS:
         raise HTTPException(
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            detail=f"Unsupported file format .{ext}. Allowed: mp3, wav, flac",
+            detail=f"Unsupported file format .{ext}. Allowed: mp3, wav, flac, m4a",
         )
 
     file_path, file_size = await storage.save(file, str(current_user.id))
@@ -88,7 +88,12 @@ async def stream_song(
     if not os.path.exists(abs_path):
         raise HTTPException(status_code=404, detail="Audio file not found on server")
 
-    media_type_map = {"mp3": "audio/mpeg", "wav": "audio/wav", "flac": "audio/flac"}
+    media_type_map = {
+        "mp3": "audio/mpeg",
+        "wav": "audio/wav",
+        "flac": "audio/flac",
+        "m4a": "audio/mp4",
+    }
     media_type = media_type_map.get(song.file_format, "audio/mpeg")
     return FileResponse(
         path=abs_path,
