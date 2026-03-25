@@ -10,9 +10,12 @@ export default function LibraryPage() {
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
+    const [showUploadOptions, setShowUploadOptions] = useState(false);
     const [addToPlaylistSong, setAddToPlaylistSong] = useState<Song | null>(null);
     const [search, setSearch] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const anyFileInputRef = useRef<HTMLInputElement>(null);
+    const recorderInputRef = useRef<HTMLInputElement>(null);
     const { setQueue } = usePlayerStore();
 
     const fetchSongs = async () => {
@@ -64,6 +67,23 @@ export default function LibraryPage() {
         setUploading(false);
         setUploadProgress(0);
         if (fileInputRef.current) fileInputRef.current.value = '';
+        if (anyFileInputRef.current) anyFileInputRef.current.value = '';
+        if (recorderInputRef.current) recorderInputRef.current.value = '';
+    };
+
+    const openDefaultAudioPicker = () => {
+        setShowUploadOptions(false);
+        fileInputRef.current?.click();
+    };
+
+    const openAnyFilePicker = () => {
+        setShowUploadOptions(false);
+        anyFileInputRef.current?.click();
+    };
+
+    const openRecorder = () => {
+        setShowUploadOptions(false);
+        recorderInputRef.current?.click();
     };
 
     const handleDelete = async (id: string) => {
@@ -105,7 +125,7 @@ export default function LibraryPage() {
                         </button>
                     )}
                     <button
-                        onClick={() => fileInputRef.current?.click()}
+                        onClick={() => setShowUploadOptions(true)}
                         disabled={uploading}
                         className="btn-primary text-xs sm:text-sm flex-1 sm:flex-none"
                     >
@@ -116,6 +136,21 @@ export default function LibraryPage() {
                         type="file"
                         accept="audio/*,.mp3,.wav,.flac,.m4a"
                         multiple
+                        className="hidden"
+                        onChange={handleFileSelect}
+                    />
+                    <input
+                        ref={anyFileInputRef}
+                        type="file"
+                        multiple
+                        className="hidden"
+                        onChange={handleFileSelect}
+                    />
+                    <input
+                        ref={recorderInputRef}
+                        type="file"
+                        accept="audio/*"
+                        capture="user"
                         className="hidden"
                         onChange={handleFileSelect}
                     />
@@ -187,6 +222,46 @@ export default function LibraryPage() {
                             </div>
                         )}
                         <button onClick={() => setAddToPlaylistSong(null)} className="btn-ghost w-full mt-4 text-sm">
+                            Dong
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {showUploadOptions && (
+                <div
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-3 sm:p-4"
+                    onClick={() => setShowUploadOptions(false)}
+                >
+                    <div
+                        className="card w-full max-w-sm p-4 sm:p-5 rounded-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h3 className="text-base sm:text-lg font-semibold mb-3">Chon cach them nhac</h3>
+                        <div className="space-y-2">
+                            <button
+                                onClick={openDefaultAudioPicker}
+                                className="w-full text-left px-4 py-3 rounded-xl hover:bg-brand-600/20 text-sm transition-colors"
+                            >
+                                Chon tu Thu vien nhac
+                            </button>
+                            <button
+                                onClick={openAnyFilePicker}
+                                className="w-full text-left px-4 py-3 rounded-xl hover:bg-brand-600/20 text-sm transition-colors"
+                            >
+                                Chon tu Tat ca tep
+                            </button>
+                            <button
+                                onClick={openRecorder}
+                                className="w-full text-left px-4 py-3 rounded-xl hover:bg-brand-600/20 text-sm transition-colors"
+                            >
+                                Ghi am nhanh (neu thiet bi ho tro)
+                            </button>
+                        </div>
+                        <button
+                            onClick={() => setShowUploadOptions(false)}
+                            className="btn-ghost w-full mt-4 text-sm"
+                        >
                             Dong
                         </button>
                     </div>
