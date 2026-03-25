@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { songsApi, playlistsApi } from '../api/client';
-import { Song, Playlist } from '../types';
+import React, { useEffect, useRef, useState } from 'react';
 import TrackRow from '../components/TrackRow';
+import { songsApi, playlistsApi } from '../api/client';
 import { usePlayerStore } from '../store/playerStore';
+import { Playlist, Song } from '../types';
 
 export default function LibraryPage() {
     const [songs, setSongs] = useState<Song[]>([]);
@@ -27,8 +27,6 @@ export default function LibraryPage() {
             try {
                 const songsRes = await songsApi.list();
                 if (isMounted) setSongs(songsRes.data.items);
-            } catch (err) {
-                console.error('Load songs failed:', err);
             } finally {
                 if (isMounted) setLoading(false);
             }
@@ -36,8 +34,8 @@ export default function LibraryPage() {
             try {
                 const playlistsRes = await playlistsApi.list();
                 if (isMounted) setPlaylists(playlistsRes.data);
-            } catch (err) {
-                console.error('Load playlists failed:', err);
+            } catch {
+                // Ignore playlist load errors on this page.
             }
         };
 
@@ -53,25 +51,25 @@ export default function LibraryPage() {
 
         setUploading(true);
         for (let i = 0; i < files.length; i++) {
-            setUploadProgress(Math.round(((i) / files.length) * 100));
+            setUploadProgress(Math.round((i / files.length) * 100));
             try {
                 await songsApi.upload(files[i]);
-            } catch (err) {
-                console.error('Upload lỗi:', err);
+            } catch {
+                // Continue uploading remaining files.
             }
         }
+
         setUploadProgress(100);
         await fetchSongs();
         setUploading(false);
         setUploadProgress(0);
-        // Reset input để có thể upload lại cùng file
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Xóa bài hát này?')) return;
+        if (!confirm('Xoa bai hat nay?')) return;
         await songsApi.delete(id);
-        setSongs(prev => prev.filter(s => s.id !== id));
+        setSongs((prev) => prev.filter((s) => s.id !== id));
     };
 
     const handleAddToPlaylist = async (playlistId: string) => {
@@ -80,37 +78,34 @@ export default function LibraryPage() {
             await playlistsApi.addSong(playlistId, addToPlaylistSong.id);
             setAddToPlaylistSong(null);
         } catch (err: any) {
-            alert(err.response?.data?.detail ?? 'Lỗi thêm vào playlist');
+            alert(err.response?.data?.detail ?? 'Loi them vao playlist');
         }
     };
 
-    const filtered = songs.filter(s =>
+    const filtered = songs.filter((s) =>
         `${s.title} ${s.artist ?? ''} ${s.album ?? ''}`.toLowerCase().includes(search.toLowerCase())
     );
 
     return (
-        <div className="pt-20 pb-28 px-4 max-w-4xl mx-auto">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-white">🎵 Thư viện nhạc</h1>
-                    <p className="text-gray-400 text-sm mt-1">{songs.length} bài hát</p>
+        <div className="pt-28 sm:pt-20 pb-32 px-3 sm:px-4 max-w-4xl mx-auto">
+            <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
+                <div className="min-w-0">
+                    <h1 className="text-xl sm:text-2xl font-bold text-white">Thu vien nhac</h1>
+                    <p className="text-gray-400 text-sm mt-1">{songs.length} bai hat</p>
                 </div>
-                <div className="flex gap-3">
+
+                <div className="flex w-full sm:w-auto gap-2 sm:gap-3">
                     {songs.length > 0 && (
-                        <button
-                            onClick={() => setQueue(songs, 0)}
-                            className="btn-ghost text-sm flex items-center gap-2"
-                        >
-                            ▶️ Phát tất cả
+                        <button onClick={() => setQueue(songs, 0)} className="btn-ghost text-xs sm:text-sm flex-1 sm:flex-none">
+                            Phat tat ca
                         </button>
                     )}
                     <button
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploading}
-                        className="btn-primary flex items-center gap-2"
+                        className="btn-primary text-xs sm:text-sm flex-1 sm:flex-none"
                     >
-                        {uploading ? `⏳ ${uploadProgress}%` : '⬆️ Upload nhạc'}
+                        {uploading ? `${uploadProgress}%` : 'Upload nhac'}
                     </button>
                     <input
                         ref={fileInputRef}
@@ -123,7 +118,6 @@ export default function LibraryPage() {
                 </div>
             </div>
 
-            {/* Upload progress bar */}
             {uploading && (
                 <div className="mb-4 h-1.5 bg-surface-700 rounded-full overflow-hidden">
                     <div
@@ -133,24 +127,19 @@ export default function LibraryPage() {
                 </div>
             )}
 
-            {/* Search */}
             <input
                 type="search"
-                placeholder="🔍 Tìm bài hát, nghệ sĩ, album..."
+                placeholder="Tim bai hat, nghe si, album..."
                 value={search}
-                onChange={e => setSearch(e.target.value)}
+                onChange={(e) => setSearch(e.target.value)}
                 className="input mb-4"
             />
 
-            {/* Track list */}
             {loading ? (
-                <div className="text-center py-20 text-gray-500">Đang tải...</div>
+                <div className="text-center py-20 text-gray-500">Dang tai...</div>
             ) : filtered.length === 0 ? (
                 <div className="text-center py-20">
-                    <p className="text-5xl mb-4">🎵</p>
-                    <p className="text-gray-400">
-                        {search ? 'Không tìm thấy bài hát' : 'Thư viện trống. Hãy upload nhạc đầu tiên!'}
-                    </p>
+                    <p className="text-gray-400">{search ? 'Khong tim thay bai hat' : 'Thu vien trong. Hay upload nhac.'}</p>
                 </div>
             ) : (
                 <div className="card p-2 space-y-1">
@@ -167,32 +156,33 @@ export default function LibraryPage() {
                 </div>
             )}
 
-            {/* Modal thêm vào playlist */}
             {addToPlaylistSong && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-                    onClick={() => setAddToPlaylistSong(null)}>
-                    <div className="card p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
-                        <h3 className="text-lg font-semibold mb-4">
-                            Thêm "<span className="text-brand-400">{addToPlaylistSong.title}</span>" vào:
+                <div
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                    onClick={() => setAddToPlaylistSong(null)}
+                >
+                    <div className="card p-5 sm:p-6 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+                        <h3 className="text-base sm:text-lg font-semibold mb-4 break-words">
+                            Them "{addToPlaylistSong.title}" vao:
                         </h3>
                         {playlists.length === 0 ? (
-                            <p className="text-gray-400 text-sm">Chưa có playlist nào. Hãy tạo playlist trước.</p>
+                            <p className="text-gray-400 text-sm">Chua co playlist nao.</p>
                         ) : (
                             <div className="space-y-2 max-h-60 overflow-y-auto">
-                                {playlists.map(p => (
+                                {playlists.map((p) => (
                                     <button
                                         key={p.id}
                                         onClick={() => handleAddToPlaylist(p.id)}
                                         className="w-full text-left px-4 py-3 rounded-xl hover:bg-brand-600/20 text-sm transition-colors"
                                     >
-                                        📋 {p.name}
-                                        <span className="text-gray-500 ml-2">({p.song_count} bài)</span>
+                                        {p.name}
+                                        <span className="text-gray-500 ml-2">({p.song_count} bai)</span>
                                     </button>
                                 ))}
                             </div>
                         )}
                         <button onClick={() => setAddToPlaylistSong(null)} className="btn-ghost w-full mt-4 text-sm">
-                            Đóng
+                            Dong
                         </button>
                     </div>
                 </div>

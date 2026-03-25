@@ -1,27 +1,27 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { usePlayerStore } from '../store/playerStore';
 import { songsApi } from '../api/client';
+import { usePlayerStore } from '../store/playerStore';
 
 const PlayIcon = () => (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 sm:w-6 sm:h-6">
         <path d="M8 5v14l11-7z" />
     </svg>
 );
 
 const PauseIcon = () => (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 sm:w-6 sm:h-6">
         <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
     </svg>
 );
 
 const SkipNextIcon = () => (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 sm:w-5 sm:h-5">
         <path d="M6 18l8.5-6L6 6v12zm8.5-6L21 6v12l-6.5-6z" />
     </svg>
 );
 
 const SkipPrevIcon = () => (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 sm:w-5 sm:h-5">
         <path d="M6 6h2v12H6zm3.5 6 8.5 6V6z" />
     </svg>
 );
@@ -50,7 +50,6 @@ export default function AudioPlayer() {
     const audioRef = useRef<HTMLAudioElement>(null);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
-
     const currentSong = queue[currentIndex] ?? null;
 
     useEffect(() => {
@@ -81,41 +80,33 @@ export default function AudioPlayer() {
         });
     }, [currentSong?.id, isPlaying, setPlaying]);
 
-    const handleTimeUpdate = () => {
-        setCurrentTime(audioRef.current?.currentTime ?? 0);
-    };
-
     const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
         const t = Number(e.target.value);
         if (audioRef.current) audioRef.current.currentTime = t;
         setCurrentTime(t);
     };
 
-    const handleAudioError = () => {
-        playNext();
-    };
-
     if (!currentSong) return null;
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-50 glass border-t border-white/10 px-4 py-3">
+        <div className="fixed bottom-0 left-0 right-0 z-50 glass border-t border-white/10 px-3 py-2 sm:px-4 sm:py-3">
             <audio
                 ref={audioRef}
-                onTimeUpdate={handleTimeUpdate}
+                onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime ?? 0)}
                 onLoadedMetadata={() => setDuration(audioRef.current?.duration ?? 0)}
                 onEnded={playNext}
-                onError={handleAudioError}
+                onError={playNext}
                 crossOrigin="use-credentials"
             />
 
-            <div className="max-w-6xl mx-auto flex items-center gap-4">
-                <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-white truncate">{currentSong.title}</p>
-                    <p className="text-xs text-gray-400 truncate">{currentSong.artist ?? 'Unknown'}</p>
-                </div>
+            <div className="max-w-6xl mx-auto">
+                <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-white truncate">{currentSong.title}</p>
+                        <p className="text-xs text-gray-400 truncate">{currentSong.artist ?? 'Unknown'}</p>
+                    </div>
 
-                <div className="flex flex-col items-center gap-2 flex-1">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 shrink-0">
                         <button
                             onClick={toggleShuffle}
                             className="p-1.5 rounded-full hover:bg-white/10 transition-colors"
@@ -123,48 +114,41 @@ export default function AudioPlayer() {
                         >
                             <ShuffleIcon active={isShuffle} />
                         </button>
-
                         <button
                             onClick={playPrev}
-                            className="p-2 rounded-full hover:bg-white/10 text-gray-300 hover:text-white transition-colors"
+                            className="p-1.5 sm:p-2 rounded-full hover:bg-white/10 text-gray-300 hover:text-white transition-colors"
                         >
                             <SkipPrevIcon />
                         </button>
-
                         <button
                             onClick={togglePlay}
-                            className="w-10 h-10 rounded-full bg-brand-600 hover:bg-brand-500 flex items-center justify-center transition-all active:scale-95 shadow-lg shadow-brand-600/30"
+                            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-brand-600 hover:bg-brand-500 flex items-center justify-center transition-all active:scale-95"
                         >
                             {isPlaying ? <PauseIcon /> : <PlayIcon />}
                         </button>
-
                         <button
                             onClick={playNext}
-                            className="p-2 rounded-full hover:bg-white/10 text-gray-300 hover:text-white transition-colors"
+                            className="p-1.5 sm:p-2 rounded-full hover:bg-white/10 text-gray-300 hover:text-white transition-colors"
                         >
                             <SkipNextIcon />
                         </button>
                     </div>
-
-                    <div className="flex items-center gap-2 w-full max-w-sm">
-                        <span className="text-xs text-gray-500 w-10 text-right">{formatTime(currentTime)}</span>
-                        <input
-                            type="range"
-                            min={0}
-                            max={duration || 0}
-                            value={currentTime}
-                            onChange={handleSeek}
-                            className="flex-1 h-1 accent-brand-500 cursor-pointer"
-                        />
-                        <span className="text-xs text-gray-500 w-10">{formatTime(duration)}</span>
-                    </div>
                 </div>
 
-                <div className="flex-1 flex justify-end">
-                    <p className="text-xs text-gray-500">
-                        {currentIndex + 1} / {queue.length}
-                        {isShuffle && <span className="ml-1 text-brand-400">Shuffle</span>}
-                    </p>
+                <div className="mt-2 flex items-center gap-2">
+                    <span className="text-[11px] text-gray-500 w-10 text-right">{formatTime(currentTime)}</span>
+                    <input
+                        type="range"
+                        min={0}
+                        max={duration || 0}
+                        value={currentTime}
+                        onChange={handleSeek}
+                        className="flex-1 h-1 accent-brand-500 cursor-pointer"
+                    />
+                    <span className="text-[11px] text-gray-500 w-10">{formatTime(duration)}</span>
+                    <span className="hidden sm:inline text-xs text-gray-500 ml-1">
+                        {currentIndex + 1}/{queue.length}
+                    </span>
                 </div>
             </div>
         </div>
