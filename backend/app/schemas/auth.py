@@ -1,14 +1,12 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr
 
-
-# ── Request schemas ──────────────────────────────────────────────────────────
 
 class RegisterRequest(BaseModel):
     email: EmailStr
-    password: str  # Tối thiểu 8 ký tự – validate ở router
+    password: str
 
 
 class LoginRequest(BaseModel):
@@ -16,7 +14,9 @@ class LoginRequest(BaseModel):
     password: str
 
 
-# ── Response schemas ─────────────────────────────────────────────────────────
+class GoogleLoginRequest(BaseModel):
+    credential: str
+
 
 class TokenResponse(BaseModel):
     access_token: str

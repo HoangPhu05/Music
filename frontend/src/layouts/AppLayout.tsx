@@ -24,6 +24,7 @@ export default function AppLayout() {
             <main>
                 <Outlet />
             </main>
+            <footer className="text-center text-xs text-gray-500 pb-24">Đinh Hoàng Phú</footer>
             <AudioPlayer />
         </div>
     );

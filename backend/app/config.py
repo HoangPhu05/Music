@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "change-me-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    GOOGLE_CLIENT_ID: str = ""
     CORS_ALLOWED_ORIGINS: str = (
         "http://localhost:5173,"
         "http://127.0.0.1:5173,"

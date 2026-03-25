@@ -261,9 +261,8 @@ export default function AudioPlayer() {
                         <div className="flex-1 flex flex-col items-center justify-center">
                             <div className="w-64 h-64 sm:w-80 sm:h-80 rounded-full bg-gradient-to-br from-brand-500/20 to-cyan-300/20 p-4 shadow-2xl">
                                 <div
-                                    className={`w-full h-full rounded-full bg-surface-900 border border-white/10 flex items-center justify-center ${
-                                        isPlaying ? 'animate-[spin_8s_linear_infinite]' : ''
-                                    }`}
+                                    className="w-full h-full rounded-full bg-surface-900 border border-white/10 flex items-center justify-center animate-record-spin"
+                                    style={{ animationPlayState: isPlaying ? 'running' : 'paused' }}
                                 >
                                     <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-gradient-to-br from-brand-500 to-cyan-300" />
                                 </div>
@@ -272,7 +271,7 @@ export default function AudioPlayer() {
                             <div className="mt-8 w-full max-w-2xl">
                                 <p className="text-xl sm:text-3xl text-white font-semibold text-center truncate">{currentSong.title}</p>
                                 <p className="text-sm sm:text-base text-gray-400 mt-2 text-center truncate">
-                                    {currentSong.artist ?? 'Unknown artist'}
+                                    {currentSong.artist ?? 'Không rõ nghệ sĩ'}
                                 </p>
 
                                 <div className="mt-6 sm:mt-8">
@@ -307,7 +306,6 @@ export default function AudioPlayer() {
                                         </button>
                                     </div>
                                 </div>
-                                <p className="mt-6 text-center text-xs text-gray-500">Đinh Hoàng Phú</p>
                             </div>
                         </div>
                     </div>

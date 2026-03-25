@@ -42,6 +42,9 @@ export const authApi = {
 
     login: (email: string, password: string) =>
         api.post<{ access_token: string; token_type: string }>('/auth/login', { email, password }),
+
+    googleLogin: (credential: string) =>
+        api.post<{ access_token: string; token_type: string }>('/auth/google', { credential }),
 };
 
 // ── Songs ─────────────────────────────────────────────────────────────────────

@@ -258,7 +258,6 @@ export default function LibraryPage() {
                                 Ghi âm nhanh (nếu thiết bị hỗ trợ)
                             </button>
                         </div>
-                        <p className="text-center text-xs text-gray-500 mt-4">Đinh Hoàng Phú</p>
                         <button
                             onClick={() => setShowUploadOptions(false)}
                             className="btn-ghost w-full mt-4 text-sm"
