@@ -168,7 +168,7 @@ export default function LibraryPage() {
 
             <input
                 type="search"
-                placeholder="Tim bai hat, nghe si, album..."
+                placeholder="Tìm bài hát, nghệ sĩ, album..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="input mb-4"
