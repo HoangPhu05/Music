@@ -1,8 +1,7 @@
 import axios from 'axios';
 
-// Khi dev, Vite proxy chuyển request sang http://127.0.0.1:8000
-// Khi production, thay bằng URL backend thực của bạn (Render...)
-const BASE_URL = import.meta.env.VITE_API_URL || '';
+const DEFAULT_API_URL = 'https://music-backend-production-7d7f.up.railway.app';
+const BASE_URL = (import.meta.env.VITE_API_URL || DEFAULT_API_URL).replace(/\/+$/, '');
 
 function buildUrl(path: string): string {
     // Dev mặc định đi qua Vite proxy (URL tương đối), production dùng BASE_URL tuyệt đối.
