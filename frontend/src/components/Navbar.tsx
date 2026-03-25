@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const links = [
-    { to: '/library', label: 'Thu vien' },
+    { to: '/library', label: 'Thư viện' },
     { to: '/playlists', label: 'Playlist' },
 ];
 
@@ -28,7 +28,7 @@ export default function Navbar() {
                     onClick={handleLogout}
                     className="btn-ghost text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2 whitespace-nowrap"
                 >
-                    Dang xuat
+                    Đăng xuất
                 </button>
 
                 <div className="order-3 w-full sm:order-none sm:w-auto flex items-center gap-1 overflow-x-auto pb-0.5">

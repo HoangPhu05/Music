@@ -156,7 +156,7 @@ export default function AudioPlayer() {
                         <button
                             onClick={() => setIsExpanded(true)}
                             className="min-w-0 text-left rounded-lg hover:bg-white/5 px-1 py-1"
-                            title="Open now playing"
+                            title="Mở trình phát"
                         >
                             <p className="text-sm font-semibold text-white truncate">{currentSong.title}</p>
                             <p className="text-xs text-gray-400 truncate">{currentSong.artist ?? 'Unknown'}</p>
@@ -194,9 +194,9 @@ export default function AudioPlayer() {
                             <button
                                 onClick={() => setShowTimerMenu((v) => !v)}
                                 className="text-xs px-2.5 py-1.5 rounded-lg text-gray-300 hover:text-white hover:bg-white/10"
-                                title="Hen gio tat nhac"
+                                title="Hẹn giờ tắt nhạc"
                             >
-                                {sleepUntil ? `Hen gio ${formatCountdown(sleepLeftMs)}` : 'Hen gio'}
+                                {sleepUntil ? `Hẹn giờ ${formatCountdown(sleepLeftMs)}` : 'Hẹn giờ'}
                             </button>
                             {showTimerMenu && (
                                 <div className="absolute bottom-10 right-0 w-36 card p-1.5 z-10">
@@ -204,25 +204,25 @@ export default function AudioPlayer() {
                                         onClick={() => setSleepTimerMinutes(15)}
                                         className="w-full text-left text-sm px-3 py-2 rounded-lg hover:bg-white/10"
                                     >
-                                        15 phut
+                                        15 phút
                                     </button>
                                     <button
                                         onClick={() => setSleepTimerMinutes(30)}
                                         className="w-full text-left text-sm px-3 py-2 rounded-lg hover:bg-white/10"
                                     >
-                                        30 phut
+                                        30 phút
                                     </button>
                                     <button
                                         onClick={() => setSleepTimerMinutes(60)}
                                         className="w-full text-left text-sm px-3 py-2 rounded-lg hover:bg-white/10"
                                     >
-                                        60 phut
+                                        60 phút
                                     </button>
                                     <button
                                         onClick={() => setSleepTimerMinutes(0)}
                                         className="w-full text-left text-sm px-3 py-2 rounded-lg hover:bg-white/10 text-red-300"
                                     >
-                                        Tat hen gio
+                                        Tắt hẹn giờ
                                     </button>
                                 </div>
                             )}
@@ -252,9 +252,9 @@ export default function AudioPlayer() {
                                 onClick={() => setIsExpanded(false)}
                                 className="text-gray-300 hover:text-white text-sm px-3 py-1.5 rounded-lg hover:bg-white/10"
                             >
-                                Dong
+                                Đóng
                             </button>
-                            <p className="text-xs sm:text-sm text-gray-400">Now Playing</p>
+                            <p className="text-xs sm:text-sm text-gray-400">Đang phát</p>
                             <div className="w-14" />
                         </div>
 
@@ -307,6 +307,7 @@ export default function AudioPlayer() {
                                         </button>
                                     </div>
                                 </div>
+                                <p className="mt-6 text-center text-xs text-gray-500">Đinh Hoàng Phú</p>
                             </div>
                         </div>
                     </div>

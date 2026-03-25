@@ -114,14 +114,14 @@ export default function LibraryPage() {
         <div className="pt-28 sm:pt-20 pb-32 px-3 sm:px-4 max-w-4xl mx-auto">
             <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
                 <div className="min-w-0">
-                    <h1 className="text-xl sm:text-2xl font-bold text-white">Thu vien nhac</h1>
-                    <p className="text-gray-400 text-sm mt-1">{songs.length} bai hat</p>
+                    <h1 className="text-xl sm:text-2xl font-bold text-white">Thư viện nhạc</h1>
+                    <p className="text-gray-400 text-sm mt-1">{songs.length} bài hát</p>
                 </div>
 
                 <div className="flex w-full sm:w-auto gap-2 sm:gap-3">
                     {songs.length > 0 && (
                         <button onClick={() => setQueue(songs, 0)} className="btn-ghost text-xs sm:text-sm flex-1 sm:flex-none">
-                            Phat tat ca
+                            Phát tất cả
                         </button>
                     )}
                     <button
@@ -129,7 +129,7 @@ export default function LibraryPage() {
                         disabled={uploading}
                         className="btn-primary text-xs sm:text-sm flex-1 sm:flex-none"
                     >
-                        {uploading ? `${uploadProgress}%` : 'Upload nhac'}
+                        {uploading ? `${uploadProgress}%` : 'Upload nhạc'}
                     </button>
                     <input
                         ref={fileInputRef}
@@ -178,7 +178,7 @@ export default function LibraryPage() {
                 <div className="text-center py-20 text-gray-500">Dang tai...</div>
             ) : filtered.length === 0 ? (
                 <div className="text-center py-20">
-                    <p className="text-gray-400">{search ? 'Khong tim thay bai hat' : 'Thu vien trong. Hay upload nhac.'}</p>
+                    <p className="text-gray-400">{search ? 'Không tìm thấy bài hát' : 'Thư viện trong. Hay upload nhạc.'}</p>
                 </div>
             ) : (
                 <div className="card p-2 space-y-1">
@@ -237,32 +237,33 @@ export default function LibraryPage() {
                         className="card w-full max-w-sm p-4 sm:p-5 rounded-2xl"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <h3 className="text-base sm:text-lg font-semibold mb-3">Chon cach them nhac</h3>
+                        <h3 className="text-base sm:text-lg font-semibold mb-3">Chọn cách thêm nhạc</h3>
                         <div className="space-y-2">
                             <button
                                 onClick={openDefaultAudioPicker}
                                 className="w-full text-left px-4 py-3 rounded-xl hover:bg-brand-600/20 text-sm transition-colors"
                             >
-                                Chon tu Thu vien nhac
+                                Chọn từ Thư viện nhạc
                             </button>
                             <button
                                 onClick={openAnyFilePicker}
                                 className="w-full text-left px-4 py-3 rounded-xl hover:bg-brand-600/20 text-sm transition-colors"
                             >
-                                Chon tu Tat ca tep
+                                Chọn từ Tất cả tệp
                             </button>
                             <button
                                 onClick={openRecorder}
                                 className="w-full text-left px-4 py-3 rounded-xl hover:bg-brand-600/20 text-sm transition-colors"
                             >
-                                Ghi am nhanh (neu thiet bi ho tro)
+                                Ghi âm nhanh (nếu thiết bị hỗ trợ)
                             </button>
                         </div>
+                        <p className="text-center text-xs text-gray-500 mt-4">Đinh Hoàng Phú</p>
                         <button
                             onClick={() => setShowUploadOptions(false)}
                             className="btn-ghost w-full mt-4 text-sm"
                         >
-                            Dong
+                            Đóng
                         </button>
                     </div>
                 </div>
