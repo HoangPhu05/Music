@@ -72,6 +72,9 @@ export const songsApi = {
     },
 
     delete: (id: string) => api.delete(`/songs/${id}`),
+
+    update: (id: string, data: { title?: string; artist?: string; album?: string }) =>
+        api.patch(`/songs/${id}`, data),
 };
 
 // ── Playlists ─────────────────────────────────────────────────────────────────

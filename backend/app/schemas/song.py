@@ -20,3 +20,9 @@ class SongResponse(BaseModel):
 class SongListResponse(BaseModel):
     total: int
     items: list[SongResponse]
+
+
+class SongUpdateRequest(BaseModel):
+    title: str | None = None
+    artist: str | None = None
+    album: str | None = None

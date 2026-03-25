@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { songsApi } from '../api/client';
 import { usePlayerStore } from '../store/playerStore';
 
@@ -43,6 +43,14 @@ function formatTime(sec: number | null): string {
     return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
+function formatCountdown(ms: number): string {
+    if (ms <= 0) return '00:00';
+    const totalSec = Math.ceil(ms / 1000);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
 export default function AudioPlayer() {
     const { queue, currentIndex, isPlaying, isShuffle, playNext, playPrev, togglePlay, toggleShuffle, setPlaying } =
         usePlayerStore();
@@ -51,6 +59,9 @@ export default function AudioPlayer() {
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [isExpanded, setIsExpanded] = useState(false);
+    const [showTimerMenu, setShowTimerMenu] = useState(false);
+    const [sleepUntil, setSleepUntil] = useState<number | null>(null);
+    const [nowTick, setNowTick] = useState(Date.now());
     const currentSong = queue[currentIndex] ?? null;
 
     useEffect(() => {
@@ -83,11 +94,42 @@ export default function AudioPlayer() {
 
     useEffect(() => {
         const onEsc = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') setIsExpanded(false);
+            if (e.key === 'Escape') {
+                setIsExpanded(false);
+                setShowTimerMenu(false);
+            }
         };
         window.addEventListener('keydown', onEsc);
         return () => window.removeEventListener('keydown', onEsc);
     }, []);
+
+    useEffect(() => {
+        if (!sleepUntil) return;
+        const timer = window.setInterval(() => {
+            setNowTick(Date.now());
+        }, 1000);
+        return () => window.clearInterval(timer);
+    }, [sleepUntil]);
+
+    useEffect(() => {
+        if (!sleepUntil) return;
+        if (Date.now() >= sleepUntil) {
+            setPlaying(false);
+            setSleepUntil(null);
+        }
+    }, [sleepUntil, nowTick, setPlaying]);
+
+    const sleepLeftMs = useMemo(() => (sleepUntil ? Math.max(0, sleepUntil - nowTick) : 0), [sleepUntil, nowTick]);
+
+    const setSleepTimerMinutes = (minutes: number) => {
+        if (minutes <= 0) {
+            setSleepUntil(null);
+            setShowTimerMenu(false);
+            return;
+        }
+        setSleepUntil(Date.now() + minutes * 60 * 1000);
+        setShowTimerMenu(false);
+    };
 
     const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
         const t = Number(e.target.value);
@@ -110,17 +152,17 @@ export default function AudioPlayer() {
                 />
 
                 <div className="max-w-6xl mx-auto">
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
                         <button
                             onClick={() => setIsExpanded(true)}
-                            className="min-w-0 flex-1 text-left rounded-lg hover:bg-white/5 px-1 py-1"
+                            className="min-w-0 text-left rounded-lg hover:bg-white/5 px-1 py-1"
                             title="Open now playing"
                         >
                             <p className="text-sm font-semibold text-white truncate">{currentSong.title}</p>
                             <p className="text-xs text-gray-400 truncate">{currentSong.artist ?? 'Unknown'}</p>
                         </button>
 
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex items-center justify-center gap-2">
                             <button
                                 onClick={toggleShuffle}
                                 className="p-1.5 rounded-full hover:bg-white/10 transition-colors"
@@ -146,6 +188,44 @@ export default function AudioPlayer() {
                             >
                                 <SkipNextIcon />
                             </button>
+                        </div>
+
+                        <div className="flex justify-end relative">
+                            <button
+                                onClick={() => setShowTimerMenu((v) => !v)}
+                                className="text-xs px-2.5 py-1.5 rounded-lg text-gray-300 hover:text-white hover:bg-white/10"
+                                title="Hen gio tat nhac"
+                            >
+                                {sleepUntil ? `Hen gio ${formatCountdown(sleepLeftMs)}` : 'Hen gio'}
+                            </button>
+                            {showTimerMenu && (
+                                <div className="absolute bottom-10 right-0 w-36 card p-1.5 z-10">
+                                    <button
+                                        onClick={() => setSleepTimerMinutes(15)}
+                                        className="w-full text-left text-sm px-3 py-2 rounded-lg hover:bg-white/10"
+                                    >
+                                        15 phut
+                                    </button>
+                                    <button
+                                        onClick={() => setSleepTimerMinutes(30)}
+                                        className="w-full text-left text-sm px-3 py-2 rounded-lg hover:bg-white/10"
+                                    >
+                                        30 phut
+                                    </button>
+                                    <button
+                                        onClick={() => setSleepTimerMinutes(60)}
+                                        className="w-full text-left text-sm px-3 py-2 rounded-lg hover:bg-white/10"
+                                    >
+                                        60 phut
+                                    </button>
+                                    <button
+                                        onClick={() => setSleepTimerMinutes(0)}
+                                        className="w-full text-left text-sm px-3 py-2 rounded-lg hover:bg-white/10 text-red-300"
+                                    >
+                                        Tat hen gio
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
 

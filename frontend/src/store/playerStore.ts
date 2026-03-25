@@ -15,6 +15,7 @@ interface PlayerState {
     togglePlay: () => void;
     toggleShuffle: () => void;
     setPlaying: (playing: boolean) => void;
+    updateSongMeta: (songId: string, patch: Partial<Song>) => void;
 }
 
 function shuffleArray(length: number, anchorIndex: number): number[] {
@@ -163,4 +164,9 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     },
 
     setPlaying: (playing) => set({ isPlaying: playing }),
+
+    updateSongMeta: (songId, patch) =>
+        set((state) => ({
+            queue: state.queue.map((song) => (song.id === songId ? { ...song, ...patch } : song)),
+        })),
 }));

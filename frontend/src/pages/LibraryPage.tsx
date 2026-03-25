@@ -82,6 +82,10 @@ export default function LibraryPage() {
         }
     };
 
+    const handleSongUpdated = (updatedSong: Song) => {
+        setSongs((prev) => prev.map((song) => (song.id === updatedSong.id ? { ...song, ...updatedSong } : song)));
+    };
+
     const filtered = songs.filter((s) =>
         `${s.title} ${s.artist ?? ''} ${s.album ?? ''}`.toLowerCase().includes(search.toLowerCase())
     );
@@ -151,6 +155,7 @@ export default function LibraryPage() {
                             allSongs={filtered}
                             onDelete={handleDelete}
                             onAddToPlaylist={setAddToPlaylistSong}
+                            onSongUpdated={handleSongUpdated}
                         />
                     ))}
                 </div>

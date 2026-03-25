@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.dependencies import get_current_user, get_db, get_optional_user_from_header_or_query
 from app.models.song import Song
 from app.models.user import User
-from app.schemas.song import SongListResponse, SongResponse
+from app.schemas.song import SongListResponse, SongResponse, SongUpdateRequest
 from app.services.storage_service import ALLOWED_FORMATS, get_file_extension, storage
 
 router = APIRouter(prefix="/songs", tags=["Songs"])
@@ -136,6 +136,32 @@ async def delete_song(
     storage.delete(song.file_path)
     await db.delete(song)
     await db.commit()
+
+
+@router.patch("/{song_id}", response_model=SongResponse)
+async def update_song(
+    song_id: uuid.UUID,
+    body: SongUpdateRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    song = await _get_song_or_404(db, song_id, current_user.id)
+
+    if body.title is not None:
+        title = body.title.strip()
+        if not title:
+            raise HTTPException(status_code=422, detail="Title cannot be empty")
+        song.title = title
+
+    if body.artist is not None:
+        song.artist = body.artist.strip() or None
+
+    if body.album is not None:
+        song.album = body.album.strip() or None
+
+    await db.commit()
+    await db.refresh(song)
+    return song
 
 
 async def _get_song_or_404(db: AsyncSession, song_id: uuid.UUID, owner_id: uuid.UUID | None) -> Song:

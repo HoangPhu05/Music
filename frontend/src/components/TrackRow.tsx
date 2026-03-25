@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { songsApi } from '../api/client';
 import { usePlayerStore } from '../store/playerStore';
 import { Song } from '../types';
@@ -9,6 +9,7 @@ interface Props {
     allSongs: Song[];
     onDelete?: (id: string) => void;
     onAddToPlaylist?: (song: Song) => void;
+    onSongUpdated?: (song: Song) => void;
 }
 
 function formatDuration(sec: number | null) {
@@ -18,9 +19,12 @@ function formatDuration(sec: number | null) {
     return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-export default function TrackRow({ song, index, allSongs, onDelete, onAddToPlaylist }: Props) {
-    const { currentIndex, queue, setQueue, isPlaying } = usePlayerStore();
+export default function TrackRow({ song, index, allSongs, onDelete, onAddToPlaylist, onSongUpdated }: Props) {
+    const { currentIndex, queue, setQueue, isPlaying, updateSongMeta } = usePlayerStore();
     const isCurrentSong = queue[currentIndex]?.id === song.id;
+    const [isEditing, setIsEditing] = useState(false);
+    const [editTitle, setEditTitle] = useState(song.title);
+    const [saving, setSaving] = useState(false);
 
     const handlePlay = () => {
         if (isCurrentSong) {
@@ -44,6 +48,27 @@ export default function TrackRow({ song, index, allSongs, onDelete, onAddToPlayl
                 a.click();
                 URL.revokeObjectURL(url);
             });
+    };
+
+    const saveTitle = async () => {
+        const nextTitle = editTitle.trim();
+        if (!nextTitle || nextTitle === song.title) {
+            setIsEditing(false);
+            setEditTitle(song.title);
+            return;
+        }
+        setSaving(true);
+        try {
+            const res = await songsApi.update(song.id, { title: nextTitle });
+            const updatedSong = res.data as Song;
+            onSongUpdated?.(updatedSong);
+            updateSongMeta(song.id, { title: updatedSong.title });
+            setIsEditing(false);
+        } catch {
+            alert('Khong the doi ten bai hat');
+        } finally {
+            setSaving(false);
+        }
     };
 
     return (
@@ -72,9 +97,27 @@ export default function TrackRow({ song, index, allSongs, onDelete, onAddToPlayl
             </div>
 
             <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium truncate ${isCurrentSong ? 'text-brand-300' : 'text-white'}`}>
-                    {song.title}
-                </p>
+                {isEditing ? (
+                    <input
+                        autoFocus
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') void saveTitle();
+                            if (e.key === 'Escape') {
+                                setIsEditing(false);
+                                setEditTitle(song.title);
+                            }
+                        }}
+                        onBlur={() => void saveTitle()}
+                        className="input h-8 py-1 text-sm"
+                    />
+                ) : (
+                    <p className={`text-sm font-medium truncate ${isCurrentSong ? 'text-brand-300' : 'text-white'}`}>
+                        {song.title}
+                    </p>
+                )}
                 <p className="text-xs text-gray-500 truncate">
                     {[song.artist, song.album].filter(Boolean).join(' • ') || 'Khong ro nghe si'}
                 </p>
@@ -87,6 +130,17 @@ export default function TrackRow({ song, index, allSongs, onDelete, onAddToPlayl
                 className="flex items-center gap-1 shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                 onClick={(e) => e.stopPropagation()}
             >
+                <button
+                    onClick={() => {
+                        setEditTitle(song.title);
+                        setIsEditing(true);
+                    }}
+                    disabled={saving}
+                    className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors text-xs"
+                    title="Doi ten bai"
+                >
+                    ✏️
+                </button>
                 {onAddToPlaylist && (
                     <button
                         onClick={() => onAddToPlaylist(song)}

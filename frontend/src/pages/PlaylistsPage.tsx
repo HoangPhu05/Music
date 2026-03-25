@@ -48,6 +48,18 @@ export default function PlaylistsPage() {
         setSelected((prev) => (prev ? { ...prev, songs: prev.songs.filter((s) => s.id !== songId) } : null));
     };
 
+    const handleSongUpdated = (updatedSong: Song) => {
+        setSelected((prev) =>
+            prev
+                ? {
+                    ...prev,
+                    songs: prev.songs.map((song) => (song.id === updatedSong.id ? { ...song, ...updatedSong } : song)),
+                }
+                : prev
+        );
+        setLibrarySongs((prev) => prev.map((song) => (song.id === updatedSong.id ? { ...song, ...updatedSong } : song)));
+    };
+
     return (
         <div className="pt-28 sm:pt-20 pb-32 px-3 sm:px-4 max-w-6xl mx-auto">
             <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 min-h-[calc(100vh-12rem)]">
@@ -148,6 +160,7 @@ export default function PlaylistsPage() {
                                                 index={i}
                                                 allSongs={selected.songs}
                                                 onDelete={handleRemoveSong}
+                                                onSongUpdated={handleSongUpdated}
                                             />
                                         ))}
                                     </div>
