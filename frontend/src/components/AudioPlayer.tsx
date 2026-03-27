@@ -131,9 +131,28 @@ export default function AudioPlayer() {
         setShowTimerMenu(false);
     };
 
+    const syncDuration = () => {
+        const audio = audioRef.current;
+        if (!audio) return;
+
+        let nextDuration = Number.isFinite(audio.duration) ? audio.duration : 0;
+        if (!nextDuration && audio.seekable.length > 0) {
+            nextDuration = audio.seekable.end(audio.seekable.length - 1);
+        }
+        setDuration(Number.isFinite(nextDuration) ? nextDuration : 0);
+    };
+
     const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const t = Number(e.target.value);
-        if (audioRef.current) audioRef.current.currentTime = t;
+        const audio = audioRef.current;
+        if (!audio) return;
+
+        const fallbackDuration = audio.seekable.length > 0 ? audio.seekable.end(audio.seekable.length - 1) : 0;
+        const effectiveDuration = duration || fallbackDuration;
+        const t = Math.max(0, Math.min(Number(e.target.value), effectiveDuration || 0));
+
+        if (effectiveDuration > 0) {
+            audio.currentTime = t;
+        }
         setCurrentTime(t);
     };
 
@@ -145,10 +164,13 @@ export default function AudioPlayer() {
                 <audio
                     ref={audioRef}
                     onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime ?? 0)}
-                    onLoadedMetadata={() => setDuration(audioRef.current?.duration ?? 0)}
+                    onLoadedMetadata={syncDuration}
+                    onDurationChange={syncDuration}
+                    onCanPlay={syncDuration}
+                    onLoadedData={syncDuration}
                     onEnded={playNext}
                     onError={playNext}
-                    crossOrigin="use-credentials"
+                    crossOrigin="anonymous"
                 />
 
                 <div className="max-w-6xl mx-auto">
