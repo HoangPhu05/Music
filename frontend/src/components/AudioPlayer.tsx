@@ -120,6 +120,10 @@ export default function AudioPlayer() {
     }, [sleepUntil, nowTick, setPlaying]);
 
     const sleepLeftMs = useMemo(() => (sleepUntil ? Math.max(0, sleepUntil - nowTick) : 0), [sleepUntil, nowTick]);
+    const seekableEnd = audioRef.current?.seekable?.length
+        ? audioRef.current.seekable.end(audioRef.current.seekable.length - 1)
+        : 0;
+    const sliderMax = Math.max(duration, seekableEnd, currentSong?.duration_seconds ?? 0, currentTime, 1);
 
     const setSleepTimerMinutes = (minutes: number) => {
         if (minutes <= 0) {
@@ -146,14 +150,15 @@ export default function AudioPlayer() {
         const audio = audioRef.current;
         if (!audio) return;
 
-        const fallbackDuration = audio.seekable.length > 0 ? audio.seekable.end(audio.seekable.length - 1) : 0;
-        const effectiveDuration = duration || fallbackDuration;
-        const seekMax = effectiveDuration > 0 ? Math.max(0, effectiveDuration - 0.2) : 0;
-        const t = Math.max(0, Math.min(Number(e.target.value), seekMax));
+        const effectiveDuration = Math.max(
+            duration,
+            audio.seekable.length > 0 ? audio.seekable.end(audio.seekable.length - 1) : 0,
+            currentSong?.duration_seconds ?? 0,
+            1,
+        );
+        const t = Math.max(0, Math.min(Number(e.target.value), effectiveDuration));
 
-        if (effectiveDuration > 0) {
-            audio.currentTime = t;
-        }
+        audio.currentTime = t;
         setCurrentTime(t);
     };
 
@@ -177,7 +182,12 @@ export default function AudioPlayer() {
             <div className="fixed bottom-0 left-0 right-0 z-50 glass border-t border-white/10 px-3 py-2 sm:px-4 sm:py-3">
                 <audio
                     ref={audioRef}
-                    onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime ?? 0)}
+                    onTimeUpdate={() => {
+                        setCurrentTime(audioRef.current?.currentTime ?? 0);
+                        if (!duration || !Number.isFinite(duration)) {
+                            syncDuration();
+                        }
+                    }}
                     onLoadedMetadata={syncDuration}
                     onDurationChange={syncDuration}
                     onCanPlay={syncDuration}
@@ -270,12 +280,13 @@ export default function AudioPlayer() {
                         <input
                             type="range"
                             min={0}
-                            max={duration || 0}
+                            max={sliderMax}
                             value={currentTime}
                             onChange={handleSeek}
+                            onInput={handleSeek}
                             className="flex-1 h-1 accent-brand-500 cursor-pointer"
                         />
-                        <span className="text-[11px] text-gray-500 w-10">{formatTime(duration)}</span>
+                        <span className="text-[11px] text-gray-500 w-10">{formatTime(duration || sliderMax)}</span>
                     </div>
                 </div>
             </div>
@@ -316,12 +327,13 @@ export default function AudioPlayer() {
                                         <input
                                             type="range"
                                             min={0}
-                                            max={duration || 0}
+                                            max={sliderMax}
                                             value={currentTime}
                                             onChange={handleSeek}
+                                            onInput={handleSeek}
                                             className="flex-1 h-1.5 accent-brand-500 cursor-pointer"
                                         />
-                                        <span className="text-xs text-gray-500 w-10">{formatTime(duration)}</span>
+                                        <span className="text-xs text-gray-500 w-10">{formatTime(duration || sliderMax)}</span>
                                     </div>
 
                                     <div className="mt-7 sm:mt-8 flex items-center justify-center gap-4 sm:gap-6">
