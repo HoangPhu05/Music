@@ -106,6 +106,4 @@ Có thể tạo `.env` trong `frontend/`:
    - `VITE_GOOGLE_CLIENT_ID` (nếu dùng Google login)
 3. Redeploy.
 
-## Tác giả
 
-**Đinh Hoàng Phú**
