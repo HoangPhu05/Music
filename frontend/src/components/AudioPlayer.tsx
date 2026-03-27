@@ -148,12 +148,26 @@ export default function AudioPlayer() {
 
         const fallbackDuration = audio.seekable.length > 0 ? audio.seekable.end(audio.seekable.length - 1) : 0;
         const effectiveDuration = duration || fallbackDuration;
-        const t = Math.max(0, Math.min(Number(e.target.value), effectiveDuration || 0));
+        const seekMax = effectiveDuration > 0 ? Math.max(0, effectiveDuration - 0.2) : 0;
+        const t = Math.max(0, Math.min(Number(e.target.value), seekMax));
 
         if (effectiveDuration > 0) {
             audio.currentTime = t;
         }
         setCurrentTime(t);
+    };
+
+    const handleEnded = () => {
+        if (queue.length <= 1) {
+            setPlaying(false);
+            return;
+        }
+        playNext();
+    };
+
+    const handleAudioError = () => {
+        // Do not auto-skip on stream errors while seeking; keep player stable.
+        setPlaying(false);
     };
 
     if (!currentSong) return null;
@@ -168,8 +182,8 @@ export default function AudioPlayer() {
                     onDurationChange={syncDuration}
                     onCanPlay={syncDuration}
                     onLoadedData={syncDuration}
-                    onEnded={playNext}
-                    onError={playNext}
+                    onEnded={handleEnded}
+                    onError={handleAudioError}
                     crossOrigin="anonymous"
                 />
 
