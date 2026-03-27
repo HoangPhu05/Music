@@ -1,8 +1,9 @@
 import os
 import uuid
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
-from fastapi.responses import FileResponse, RedirectResponse
+import requests
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
+from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -75,6 +76,7 @@ async def list_songs(
 @router.get("/{song_id}/stream")
 async def stream_song(
     song_id: uuid.UUID,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User | None = Depends(get_optional_user_from_header_or_query),
 ):
@@ -82,7 +84,50 @@ async def stream_song(
 
     public_url = storage.get_public_url(song.file_path)
     if public_url:
-        return RedirectResponse(url=public_url)
+        upstream_headers = {}
+        range_header = request.headers.get("range")
+        if range_header:
+            upstream_headers["Range"] = range_header
+
+        try:
+            upstream = requests.get(public_url, headers=upstream_headers, stream=True, timeout=30)
+        except requests.RequestException as exc:
+            raise HTTPException(status_code=502, detail=f"Could not stream remote audio: {exc}") from exc
+
+        if upstream.status_code >= 400:
+            detail = f"Remote audio server returned status {upstream.status_code}"
+            upstream.close()
+            raise HTTPException(status_code=502, detail=detail)
+
+        passthrough_headers = {}
+        for key in [
+            "Content-Length",
+            "Content-Range",
+            "Accept-Ranges",
+            "Cache-Control",
+            "ETag",
+            "Last-Modified",
+        ]:
+            value = upstream.headers.get(key)
+            if value:
+                passthrough_headers[key] = value
+
+        media_type = upstream.headers.get("Content-Type", "audio/mpeg")
+
+        def iter_chunks():
+            try:
+                for chunk in upstream.iter_content(chunk_size=1024 * 256):
+                    if chunk:
+                        yield chunk
+            finally:
+                upstream.close()
+
+        return StreamingResponse(
+            iter_chunks(),
+            status_code=upstream.status_code,
+            headers=passthrough_headers,
+            media_type=media_type,
+        )
 
     abs_path = storage.get_absolute_path(song.file_path)
     if not os.path.exists(abs_path):
