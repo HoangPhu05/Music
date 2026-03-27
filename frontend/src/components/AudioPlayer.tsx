@@ -171,8 +171,7 @@ export default function AudioPlayer() {
     };
 
     const handleAudioError = () => {
-        // Do not auto-skip on stream errors while seeking; keep player stable.
-        setPlaying(false);
+        // Ignore transient seek/network hiccups; avoid forcing restart/pause.
     };
 
     if (!currentSong) return null;
@@ -182,19 +181,20 @@ export default function AudioPlayer() {
             <div className="fixed bottom-0 left-0 right-0 z-50 glass border-t border-white/10 px-3 py-2 sm:px-4 sm:py-3">
                 <audio
                     ref={audioRef}
+                    preload="metadata"
                     onTimeUpdate={() => {
                         setCurrentTime(audioRef.current?.currentTime ?? 0);
                         if (!duration || !Number.isFinite(duration)) {
                             syncDuration();
                         }
                     }}
+                    onSeeked={() => setCurrentTime(audioRef.current?.currentTime ?? 0)}
                     onLoadedMetadata={syncDuration}
                     onDurationChange={syncDuration}
                     onCanPlay={syncDuration}
                     onLoadedData={syncDuration}
                     onEnded={handleEnded}
                     onError={handleAudioError}
-                    crossOrigin="anonymous"
                 />
 
                 <div className="max-w-6xl mx-auto">
